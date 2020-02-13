@@ -1,0 +1,11 @@
+{
+	"editor.insertSpaces": false,
+	"files.exclude": {
+		"node_modules": true,
+		"**/.git": true,
+		"**/.DS_Store": true
+	},
+	"files.trimTrailingWhitespace": true,
+	"typescript.tsdk": "./node_modules/typescript/lib",
+	"editor.tabSize": 4
+}

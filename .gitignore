@@ -1,0 +1,15 @@
+# Dependencies
+node_modules
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Other artifacts
+npm-debug.log*
+yarn-error.log
+.tscache
+.cache
+
+# Build folder
+dist

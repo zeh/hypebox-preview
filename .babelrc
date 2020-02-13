@@ -1,0 +1,15 @@
+{
+	"sourceType": "unambiguous",
+	"presets": [
+		[
+			"@babel/preset-env",
+			{
+				"forceAllTransforms": true,
+				"useBuiltIns": "entry",
+				"corejs": 3,
+			},
+		],
+		"@babel/preset-react",
+	],
+	"plugins": [],
+}
