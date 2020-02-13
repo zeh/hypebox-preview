@@ -3,7 +3,9 @@ import cx from "classnames";
 
 import styles from "./styles";
 
-interface IProps {}
+interface IProps {
+	onDropFiles?: (files: File[]) => void;
+}
 
 interface IState {
 	isDraggingOverWindow: boolean;
@@ -55,31 +57,38 @@ export default class DropTarget extends React.Component<IProps, IState> {
 
 		if (e.dataTransfer.items) {
 			// Use DataTransferItemList interface to access the file(s)
+			const files: File[] = [];
 			for (let i = 0; i < e.dataTransfer.items.length; i++) {
 				// If dropped items aren't files, reject them
 				if (e.dataTransfer.items[i].kind === "file") {
 					const file = e.dataTransfer.items[i].getAsFile();
-					if (file) {
-						console.log("x... file[" + i + "].name = " + file.name);
-					} else {
-						console.log("x... file[" + i + "].name = NULL");
-					}
+					if (file) files.push(file);
 				}
 			}
+			this.handleFilesDrop(files);
 		} else {
 			// Use DataTransfer interface to access the file(s)
+			const files: File[] = [];
 			for (let i = 0; i < e.dataTransfer.files.length; i++) {
-				console.log("y... file[" + i + "].name = " + e.dataTransfer.files[i].name);
+				const file = e.dataTransfer.files[i];
+				if (file) files.push(file);
 			}
+			this.handleFilesDrop(files);
 		}
 		// TODO: Maybe read with https://developer.mozilla.org/en-US/docs/Web/API/File
+	}
+
+	private handleFilesDrop(files: File[]): void {
+		if (files.length > 0 && this.props.onDropFiles) {
+			this.props.onDropFiles(files);
+		}
 	}
 
 	private handleDragOver(e: React.DragEvent<HTMLDivElement>): void {
 		e.preventDefault();
 	}
 
-	private handleDragLeave(e: React.DragEvent<HTMLDivElement>): void {
+	private handleDragLeave(): void {
 		this.setState({
 			isDraggingOverWindow: false,
 		});
