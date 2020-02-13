@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { Canvas, useFrame } from "react-three-fiber";
 
 import Header from "../Header";
+import DropTarget from "../DropTarget";
 
 import styles from "./styles";
 
@@ -51,6 +52,7 @@ export default class App extends React.Component {
 					<Box position={[-1.2, 0, 0]} />
 					<Box position={[1.2, 0, 0]} />
 				</Canvas>
+				<DropTarget />
 			</div>
 		);
 	}
