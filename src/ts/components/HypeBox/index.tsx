@@ -2,10 +2,18 @@ import * as React from "react";
 import * as THREE from "three";
 import { ReactThreeFiber } from "react-three-fiber";
 
-export default class HypeBox extends React.Component {
-	private meshRef = React.createRef<ReactThreeFiber.Object3DNode<THREE.Mesh, typeof THREE.Mesh>>();
+const BOX_DIAMETER = 2.5;
+const BOX_THICKNESS = 0.2;
+const DOOR_INDENT = 0.15;
 
-	public constructor(props: any) {
+interface IProps {
+	image?: HTMLImageElement;
+}
+
+export default class HypeBox extends React.Component<IProps> {
+	private rootRef = React.createRef<ReactThreeFiber.Object3DNode<THREE.Group, typeof THREE.Group>>();
+
+	public constructor(props: IProps) {
 		super(props);
 
 		this.handleFrame = this.handleFrame.bind(this);
@@ -20,40 +28,102 @@ export default class HypeBox extends React.Component {
 		// https://codesandbox.io/s/react-three-fiber-custom-geometry-with-fragment-shader-material-vxswf?from-embed
 		// geometry =
 		//<sphereGeometry attach={"geometry"} args={[1, 16, 16]} />
+		// onClick={(e) => setActive(!active)}
+		// onPointerOver={(e) => setHover(true)}
+		// onPointerOut={(e) => setHover(false)}
 
-		const [vertices, faces] = this.generateMesh();
+		const [doorVertices, doorFaces, doorUVs] = this.generateDoorMesh();
+		const [boxVertices, boxFaces] = this.generateBoxMesh();
+
+		// TODO: memoize this, regenerate as needed instead
+		const { image } = this.props;
+		let texture: THREE.Texture | null = null;
+		if (image) {
+			texture = new THREE.Texture(image);
+			texture.needsUpdate = true;
+		}
 
 		return (
-			<mesh ref={this.meshRef} position={[0, 0, 0]} rotation={[0, 0, 0]}>
-				<geometry
-					attach={"geometry"}
-					vertices={vertices}
-					faces={faces}
-					onUpdate={(self) => self.computeFaceNormals()}
-				/>
-				<meshStandardMaterial attach={"material"} color={"#999999"} transparent={true} />
-			</mesh>
+			<group ref={this.rootRef}>
+				<mesh position={[0, 0, 0]} rotation={[0, 0, 0]}>
+					<geometry
+						attach={"geometry"}
+						vertices={doorVertices}
+						faces={doorFaces}
+						faceVertexUvs={doorUVs}
+						onUpdate={(self) => self.computeFaceNormals()}
+					/>
+					{texture ? (
+						<meshBasicMaterial attach={"material"} map={texture} transparent={false} />
+					) : (
+						<meshStandardMaterial attach={"material"} color={"#999999"} transparent={true} />
+					)}
+				</mesh>
+				<mesh position={[0, 0, 0]} rotation={[0, 0, 0]}>
+					<geometry
+						attach={"geometry"}
+						vertices={boxVertices}
+						faces={boxFaces}
+						onUpdate={(self) => self.computeFaceNormals()}
+					/>
+					<meshStandardMaterial attach={"material"} color={"#999999"} transparent={true} />
+				</mesh>
+			</group>
 		);
 	}
 
 	private handleFrame(): void {
-		if (this.meshRef.current && this.meshRef.current.rotation) {
-			const rotation = this.meshRef.current.rotation as THREE.Euler;
+		if (this.rootRef.current && this.rootRef.current.rotation) {
+			const rotation = this.rootRef.current.rotation as THREE.Euler;
 			rotation.x = rotation.y += 0.01;
 		}
 		requestAnimationFrame(this.handleFrame);
 	}
 
-	private generateMesh(): [THREE.Vector3[], THREE.Face3[]] {
-		const diameter = 2.5;
-		const thickness = 0.2;
+	private generateDoorMesh(): [THREE.Vector3[], THREE.Face3[], THREE.Vector2[][][]] {
+		const ddi = BOX_DIAMETER / 2 - BOX_THICKNESS;
+		const ddd = BOX_DIAMETER / 2 - DOOR_INDENT;
 
-		const ddo = diameter / 2;
-		const ddi = ddo - thickness;
+		const vertices: Array<[number, number, number]> = [
+			[-ddi, ddi, ddd],
+			[ddi, ddi, ddd],
+			[ddi, -ddi, ddd],
+			[-ddi, -ddi, ddd],
+		];
+
+		const faces: Array<[number, number, number]> = [
+			[0, 3, 2],
+			[2, 1, 0],
+		];
+
+		// Material (unused here), face, vertex
+		const uvs: Array<Array<[number, number]>> = [
+			[
+				[0, 1],
+				[0, 0],
+				[1, 0],
+			],
+			[
+				[1, 0],
+				[1, 1],
+				[0, 1],
+			],
+		];
+
+		return [
+			vertices.map((v) => new THREE.Vector3(...v)),
+			faces.map((f) => new THREE.Face3(...f)),
+			[uvs.map((f) => f.map((v) => new THREE.Vector2(...v)))],
+		];
+	}
+
+	private generateBoxMesh(): [THREE.Vector3[], THREE.Face3[]] {
+		const ddo = BOX_DIAMETER / 2;
+		const ddi = ddo - BOX_THICKNESS;
 
 		// Outside: top (clockwise), bottom (clockwise)
 		// Inside: top (clockwise), bottom (clockwise)
-		const cubeVertices: Array<[number, number, number]> = [
+		const vertices: Array<[number, number, number]> = [
 			// Outside, top
 			[-ddo, ddo, -ddo],
 			[ddo, ddo, -ddo],
@@ -76,7 +146,7 @@ export default class HypeBox extends React.Component {
 			[-ddi, -ddi, ddo],
 		];
 
-		const cubeFaces: Array<[number, number, number]> = [
+		const faces: Array<[number, number, number]> = [
 			// Outside
 
 			// Top
@@ -126,6 +196,6 @@ export default class HypeBox extends React.Component {
 			[14, 13, 12],
 		];
 
-		return [cubeVertices.map((v) => new THREE.Vector3(...v)), cubeFaces.map((f) => new THREE.Face3(...f))];
+		return [vertices.map((v) => new THREE.Vector3(...v)), faces.map((f) => new THREE.Face3(...f))];
 	}
 }
