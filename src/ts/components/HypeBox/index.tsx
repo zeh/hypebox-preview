@@ -11,16 +11,8 @@ interface IProps {
 }
 
 export default class HypeBox extends React.Component<IProps> {
-	private rootRef = React.createRef<ReactThreeFiber.Object3DNode<THREE.Group, typeof THREE.Group>>();
-
 	public constructor(props: IProps) {
 		super(props);
-
-		this.handleFrame = this.handleFrame.bind(this);
-	}
-
-	public componentDidMount(): void {
-		this.handleFrame();
 	}
 
 	public render(): JSX.Element {
@@ -44,7 +36,7 @@ export default class HypeBox extends React.Component<IProps> {
 		}
 
 		return (
-			<group ref={this.rootRef}>
+			<group>
 				<mesh position={[0, 0, 0]} rotation={[0, 0, 0]}>
 					<geometry
 						attach={"geometry"}
@@ -70,14 +62,6 @@ export default class HypeBox extends React.Component<IProps> {
 				</mesh>
 			</group>
 		);
-	}
-
-	private handleFrame(): void {
-		if (this.rootRef.current && this.rootRef.current.rotation) {
-			const rotation = this.rootRef.current.rotation as THREE.Euler;
-			rotation.x = rotation.y += 0.01;
-		}
-		requestAnimationFrame(this.handleFrame);
 	}
 
 	private generateDoorMesh(): [THREE.Vector3[], THREE.Face3[], THREE.Vector2[][][]] {
