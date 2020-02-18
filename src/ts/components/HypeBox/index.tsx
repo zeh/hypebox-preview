@@ -1,6 +1,5 @@
 import * as React from "react";
 import * as THREE from "three";
-import { ReactThreeFiber } from "react-three-fiber";
 
 const BOX_DIAMETER = 2.5;
 const BOX_THICKNESS = 0.2;
@@ -46,7 +45,7 @@ export default class HypeBox extends React.Component<IProps> {
 						onUpdate={(self) => self.computeFaceNormals()}
 					/>
 					{texture ? (
-						<meshBasicMaterial attach={"material"} map={texture} transparent={false} />
+						<meshBasicMaterial attach={"material"} map={texture} transparent={true} blending={THREE.MultiplyBlending} />
 					) : (
 						<meshStandardMaterial attach={"material"} color={"#999999"} transparent={true} />
 					)}
